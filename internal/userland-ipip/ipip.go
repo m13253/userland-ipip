@@ -24,52 +24,28 @@ import (
 )
 
 func newIPIPConn(network string, local, remote *net.IPAddr) (ip4ip, ip6ip *net.IPConn, err error) {
-	if network == "ip6" {
-		if remote != nil {
-			ip6ip, err = net.DialIP("ip6:41", local, remote)
-			if err != nil {
-				return
-			}
-			ip4ip, err = net.DialIP("ip6:4", local, remote)
-			if err != nil {
-				ip6ip.Close()
-				return
-			}
-		} else {
-			ip6ip, err = net.ListenIP("ip6:41", local)
-			if err != nil {
-				return
-			}
-			ip4ip, err = net.ListenIP("ip6:4", local)
-			if err != nil {
-				ip6ip.Close()
-				return
-			}
+	switch network {
+	case "ip6":
+		ip6ip, err = net.DialIP("ip6:41", local, remote)
+		if err != nil {
+			return
+		}
+		ip4ip, err = net.DialIP("ip6:4", local, remote)
+		if err != nil {
+			ip6ip.Close()
+			return
 		}
 		return
-	}
 
-	if network == "ip4" {
-		if remote != nil {
-			ip6ip, err = net.DialIP("ip4:41", local, remote)
-			if err != nil {
-				return
-			}
-			ip4ip, err = net.DialIP("ip4:4", local, remote)
-			if err != nil {
-				ip6ip.Close()
-				return
-			}
-		} else {
-			ip6ip, err = net.ListenIP("ip4:41", local)
-			if err != nil {
-				return
-			}
-			ip4ip, err = net.ListenIP("ip4:4", local)
-			if err != nil {
-				ip6ip.Close()
-				return
-			}
+	case "ip4":
+		ip6ip, err = net.DialIP("ip4:41", local, remote)
+		if err != nil {
+			return
+		}
+		ip4ip, err = net.DialIP("ip4:4", local, remote)
+		if err != nil {
+			ip6ip.Close()
+			return
 		}
 		return
 	}

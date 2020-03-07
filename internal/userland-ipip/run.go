@@ -46,7 +46,7 @@ func RunIPIP(devName, local, remote string, useIPv4, useIPv6 bool, mtu uint16) e
 		}
 	}
 
-	if useIPv4 {
+	if ip4ip == nil && ip6ip == nil && useIPv4 {
 		var localAddr, remoteAddr *net.IPAddr
 		if len(local) != 0 {
 			localAddr, err3 = net.ResolveIPAddr("ip4", local)
@@ -86,7 +86,7 @@ func RunIPIP(devName, local, remote string, useIPv4, useIPv6 bool, mtu uint16) e
 	}
 	defer tun.Close()
 
-	fmt.Printf("Tunnel created, local %v, remote %v.\n", ip6ip.LocalAddr(), ip6ip.RemoteAddr())
+	fmt.Printf("Tunnel created, local %v, remote %v\n", ip6ip.LocalAddr(), ip6ip.RemoteAddr())
 
 	errChan := make(chan error)
 	go forwardIP6ToTun(tun, ip6ip, errChan)
@@ -141,7 +141,7 @@ func forwardIP4ToTun(tun *os.File, ip4ip *net.IPConn, errChan chan<- error) {
 	for {
 		n, _, err := ip4ip.ReadFromIP(buf[4:])
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to read IPv4 tunneled data: %v\n", err)
+			fmt.Fprintf(os.Stderr, "IPv4 tunnel returns: %v (maybe caused by ICMP)\n", err)
 			continue
 		}
 		if n == 0 {
@@ -164,7 +164,7 @@ func forwardIP6ToTun(tun *os.File, ip6ip *net.IPConn, errChan chan<- error) {
 	for {
 		n, _, err := ip6ip.ReadFromIP(buf[4:])
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to read IPv6 tunneled data: %v\n", err)
+			fmt.Fprintf(os.Stderr, "IPv6 tunnel returns: %v (maybe caused by ICMP)\n", err)
 			continue
 		}
 		if n == 0 {

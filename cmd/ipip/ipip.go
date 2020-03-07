@@ -107,7 +107,7 @@ func main() {
 		localAddress = new(string)
 	}
 	if remoteAddress == nil {
-		remoteAddress = new(string)
+		reportArguentError(0, "remote address not specified")
 	}
 	if !useIPv4 && !useIPv6 {
 		useIPv4, useIPv6 = true, true
@@ -124,14 +124,15 @@ func main() {
 }
 
 func printHelp() {
-	fmt.Printf("Usage: %s [-4 | -6] dev DEVICE [local ADDRESS] [remote ADDRESS] [mtu MTU]\n", os.Args[0])
+	fmt.Printf("Usage: %s [-4 | -6] dev DEVICE [local ADDRESS] remote ADDRESS [mtu MTU]\n", os.Args[0])
 	fmt.Print("Userland IPIP / IPIP6 / IP6IP (6in4) / IP6IP6 tunnel for Linux.\n\n")
 	fmt.Print("This program establishes IPIP and IP6IP (6in4) tunnel, or IPIP6 and IP6IP6 \n")
 	fmt.Print("tunnel on a TUN device.\n\n")
 	fmt.Print("Options:\n")
-	fmt.Print("  -4                         use IPv4 to resolve addresses.\n")
-	fmt.Print("  -6                         use IPv6 to resolve addresses.\n")
-	fmt.Print("                               otherwise, IPv6 will be tried first, then IPv4.\n\n")
+	fmt.Print("  -4            use IPv4 to resolve addresses.\n")
+	fmt.Print("  -6            use IPv6 to resolve addresses.\n")
+	fmt.Print("                  otherwise, IPv6 will be tried first, then IPv4.\n\n")
+	fmt.Print("Project web page: https://github.com/m13253/userland-ipip\n\n")
 }
 
 func reportArguentError(index int, reason string) {
