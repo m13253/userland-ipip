@@ -31,6 +31,23 @@ tunnel between two hosts.
 
 ## Usage
 
+```
+Usage: ipip [-4 | -6] dev DEVICE [local ADDRESS] remote ADDRESS [mtu MTU]
+Userland IPIP + IP6IP (6in4) / IPIP6 + IP6IP6 tunnel for Linux.
+
+This program establishes IPIP and IP6IP (6in4) tunnel, or IPIP6 and IP6IP6
+tunnel on a TUN device.
+
+Options:
+  -4            use IPv4 to resolve addresses.
+  -6            use IPv6 to resolve addresses.
+                  otherwise, IPv6 will be tried first, then IPv4.
+
+Project web page: https://github.com/m13253/userland-ipip
+```
+
+## Example
+
 Please change the names and the addresses below to suit your needs.
 
 On the first machine (e.g. fox.localdomain)
