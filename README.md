@@ -58,9 +58,9 @@ or
 sudo ip link delete tun-fox
 ```
 
-## Preventing "connection refused"
+## Preventing “connection refused”
 
-You may find a lot of "connection refused" on the screen. They are caused by
+You may find a lot of “connection refused” on the screen. They are caused by
 the remote machine sending ICMP errors to us.
 
 It is suggested to block these packets to save bandwidth. A dirty but effective
