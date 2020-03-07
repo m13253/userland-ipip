@@ -1,0 +1,10 @@
+{
+    "go.testEnvVars": {
+        "GOARCH": "amd64",
+        "GOOS": "linux"
+    },
+    "go.toolsEnvVars": {
+        "GOARCH": "amd64",
+        "GOOS": "linux"
+    }
+}
