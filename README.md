@@ -118,5 +118,5 @@ iface tun-rabbit inet6 static
 This program is released under GNU General Public License version 3 or later.
 I hope this program can be useful to you. But I provide **absolutely no
 warranty**. In case the program causes any damage due to malfunctioning, I might
-be willing to diagnose and fix the problem, but it is not my responsibility to
+be willing to diagnose and fix the problem, but it is not my obligation to
 do so.
