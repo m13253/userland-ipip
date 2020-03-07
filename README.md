@@ -71,6 +71,21 @@ sudo iptables -A OUTPUT -d [PEER IPv4 ADDRESS] -p icmp --icmp-type 3/3 -j DROP
 
 Luckily the problem does not happen over IPv6.
 
+## Use userland-ipip with `/etc/network/interfaces`
+
+```conf
+auto tun-rabbit
+iface tun-rabbit inet static
+   address 10.0.0.1
+   pointopoint 10.0.0.2
+   pre-up ip tuntap add mode tun name $IFACE
+   up /path/to/ipip dev $IFACE local fox.localdomain remote rabbit.localdomain mtu 1460 &
+   post-down ip link del $IFACE
+iface tun-rabbit inet6 static
+   address fd00:cafe::1/128
+   up ip route add fd00:cafe::2 dev $IFACE metric 256
+```
+
 ## License
 
 This program is released under GNU General Public License version 3 or later.
