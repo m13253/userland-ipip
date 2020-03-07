@@ -2,6 +2,9 @@
 
 Userland IPIP + IP6IP (6in4) / IPIP6 + IP6IP6 tunnel for Linux
 
+userland-ipip sets up either an IPIP + IP6IP (6in4) tunnel, or an IPIP6 + IP6IP6
+tunnel between two hosts.
+
 ## Features
 
 userland-ipip reduces headache when you find that a `type ip6tnl mode any`
