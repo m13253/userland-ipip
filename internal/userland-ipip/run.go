@@ -17,6 +17,7 @@
 package userland_ipip
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"net"
@@ -88,19 +89,27 @@ func RunIPIP(devName, local, remote string, useIPv4, useIPv6 bool, mtu uint16) e
 
 	fmt.Printf("Tunnel created, local %v, remote %v\n", ip6ip.LocalAddr(), ip6ip.RemoteAddr())
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	errChan := make(chan error)
-	go forwardIP6ToTun(tun, ip6ip, errChan)
-	go forwardIP4ToTun(tun, ip4ip, errChan)
-	go forwardTunToIP(ip4ip, ip6ip, tun, errChan)
+	go forwardIP6ToTun(ctx, tun, ip6ip, errChan)
+	go forwardIP4ToTun(ctx, tun, ip4ip, errChan)
+	go forwardTunToIP(ctx, ip4ip, ip6ip, tun, errChan)
 
 	err = <-errChan
 	return err
 }
 
-func forwardTunToIP(ip4ip, ip6ip *net.IPConn, tun *os.File, errChan chan<- error) {
+func forwardTunToIP(ctx context.Context, ip4ip, ip6ip *net.IPConn, tun *os.File, errChan chan<- error) {
 	var buf [65540]byte
 
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 		n, err := tun.Read(buf[:])
 		if err != nil {
 			errChan <- fmt.Errorf("failed to read from TUN device: %v", err)
@@ -134,11 +143,17 @@ func forwardTunToIP(ip4ip, ip6ip *net.IPConn, tun *os.File, errChan chan<- error
 	}
 }
 
-func forwardIP4ToTun(tun *os.File, ip4ip *net.IPConn, errChan chan<- error) {
+func forwardIP4ToTun(ctx context.Context, tun *os.File, ip4ip *net.IPConn, errChan chan<- error) {
 	var buf [65540]byte
 	binary.BigEndian.PutUint16(buf[2:4], etherTypeIPv4)
 
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 		n, _, err := ip4ip.ReadFromIP(buf[4:])
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "IPv4 tunnel returns: %v (maybe caused by ICMP)\n", err)
@@ -157,11 +172,17 @@ func forwardIP4ToTun(tun *os.File, ip4ip *net.IPConn, errChan chan<- error) {
 	}
 }
 
-func forwardIP6ToTun(tun *os.File, ip6ip *net.IPConn, errChan chan<- error) {
+func forwardIP6ToTun(ctx context.Context, tun *os.File, ip6ip *net.IPConn, errChan chan<- error) {
 	var buf [65540]byte
 	binary.BigEndian.PutUint16(buf[2:4], etherTypeIPv6)
 
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 		n, _, err := ip6ip.ReadFromIP(buf[4:])
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "IPv6 tunnel returns: %v (maybe caused by ICMP)\n", err)
