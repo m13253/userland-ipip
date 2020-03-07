@@ -114,8 +114,6 @@ func forwardTunToIP(ip4ip, ip6ip *net.IPConn, tun *os.File, errChan chan<- error
 			continue
 		}
 
-		fmt.Printf("Read from TUN: %x\n", buf[4:n])
-
 		ethertype := binary.BigEndian.Uint16(buf[2:4])
 		packet := buf[4:n]
 
@@ -138,20 +136,18 @@ func forwardTunToIP(ip4ip, ip6ip *net.IPConn, tun *os.File, errChan chan<- error
 
 func forwardIP4ToTun(tun *os.File, ip4ip *net.IPConn, errChan chan<- error) {
 	var buf [65540]byte
-
 	binary.BigEndian.PutUint16(buf[2:4], etherTypeIPv4)
+
 	for {
-		n, err := ip4ip.Read(buf[4:])
+		n, _, err := ip4ip.ReadFromIP(buf[4:])
 		if err != nil {
-			errChan <- fmt.Errorf("failed to read IPv4 tunneled data: %v", err)
-			return
+			fmt.Fprintf(os.Stderr, "Failed to read IPv4 tunneled data: %v\n", err)
+			continue
 		}
 		if n == 0 {
 			errChan <- nil
 			return
 		}
-
-		fmt.Printf("Read from IP4: %x\n", buf[4:n+4])
 
 		_, err = tun.Write(buf[:n+4])
 		if err != nil {
@@ -163,20 +159,18 @@ func forwardIP4ToTun(tun *os.File, ip4ip *net.IPConn, errChan chan<- error) {
 
 func forwardIP6ToTun(tun *os.File, ip6ip *net.IPConn, errChan chan<- error) {
 	var buf [65540]byte
-
 	binary.BigEndian.PutUint16(buf[2:4], etherTypeIPv6)
+
 	for {
-		n, err := ip6ip.Read(buf[4:])
+		n, _, err := ip6ip.ReadFromIP(buf[4:])
 		if err != nil {
-			errChan <- fmt.Errorf("failed to read IPv6 tunneled data: %v", err)
-			return
+			fmt.Fprintf(os.Stderr, "Failed to read IPv6 tunneled data: %v\n", err)
+			continue
 		}
 		if n == 0 {
 			errChan <- nil
 			return
 		}
-
-		fmt.Printf("Read from IP6: %x\n", buf[4:n+4])
 
 		_, err = tun.Write(buf[:n+4])
 		if err != nil {

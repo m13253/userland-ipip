@@ -38,7 +38,7 @@ func newTunDevice(name string, mtu uint16) (*os.File, error) {
 
 	ifreq_flags := &ifreq_flags{}
 	copy(ifreq_flags.ifr_name[:], name)
-	ifreq_flags.ifr_flags = unix.IFF_TUN | unix.IFF_MULTI_QUEUE
+	ifreq_flags.ifr_flags = unix.IFF_TUN
 
 	r1, _, err := syscall.Syscall(unix.SYS_IOCTL, f.Fd(), unix.TUNSETIFF, uintptr(unsafe.Pointer(ifreq_flags)))
 	if r1 != 0 {

@@ -55,7 +55,7 @@ func newIPIPConn(network string, local, remote *net.IPAddr) (ip4ip, ip6ip *net.I
 			if err != nil {
 				return
 			}
-			ip4ip, err = net.DialIP("ip4:94", local, remote)
+			ip4ip, err = net.DialIP("ip4:4", local, remote)
 			if err != nil {
 				ip6ip.Close()
 				return
@@ -65,7 +65,7 @@ func newIPIPConn(network string, local, remote *net.IPAddr) (ip4ip, ip6ip *net.I
 			if err != nil {
 				return
 			}
-			ip4ip, err = net.ListenIP("ip4:94", local)
+			ip4ip, err = net.ListenIP("ip4:4", local)
 			if err != nil {
 				ip6ip.Close()
 				return
