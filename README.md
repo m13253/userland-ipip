@@ -71,6 +71,33 @@ sudo iptables -A OUTPUT -d [PEER IPv4 ADDRESS] -p icmp --icmp-type 3/3 -j DROP
 
 Luckily the problem does not happen over IPv6.
 
+## Use userland-ipip with systemd
+
+I don't provide a systemd service file out-of-the-box, since you may want to
+write one systemd service for each tunnel you want to create.
+
+Here is a template that you can modify based on:
+```systemd
+[Unit]
+Description=Userland IPIP for rabbit.localdomain
+Documentation=https://github.com/m13253/userland-ipip
+After=network.target
+
+[Service]
+ExecStartPre=-/usr/bin/env ip tunnel delete tun-rabbit
+ExecStartPre=/usr/bin/env ip tuntap add mode tun name tun-rabbit
+ExecStartPre=/usr/bin/env ip address add 10.0.0.1 peer 10.0.0.2/32 dev tun-rabbit
+ExecStartPre=/usr/bin/env ip address add fd00:cafe::1 peer fd00:cafe::2/128 dev tun-rabbit
+ExecStart=/path/to/ipip dev tun-rabbit local fox.localdomain remote rabbit.localdomain mtu 1460
+ExecStopPost=/usr/bin/env ip tunnel delete tun-rabbit
+Restart=always
+RestartSec=3
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ## Use userland-ipip with `/etc/network/interfaces`
 
 ```conf
