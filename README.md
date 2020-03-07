@@ -23,7 +23,7 @@ userland-ipip also solves the problem when you want to fragment your tunnel.
 1. Download Go compiler. The newer version, the better.
 
 2. Type
-```sh
+```bash
 ./build.sh
 ```
 
@@ -34,7 +34,7 @@ userland-ipip also solves the problem when you want to fragment your tunnel.
 Please change the names and the addresses below to suit your needs.
 
 On the first machine (e.g. fox.localdomain)
-```sh
+```bash
 sudo ip tuntap add mode tun name tun-rabbit
 sudo ip address add 10.0.0.1 peer 10.0.0.2/32 dev tun-rabbit
 sudo ip address add fd00:cafe::1 peer fd00:cafe::2/128 dev tun-rabbit
@@ -42,7 +42,7 @@ sudo ./build/ipip dev tun-rabbit remote rabbit.localdomain mtu 1460
 ```
 
 On the second machine (e.g. rabbit.localdomain)
-```sh
+```bash
 sudo ip tuntap add mode tun name tun-fox
 sudo ip address add 10.0.0.2 peer 10.0.0.1/32 dev tun-fox
 sudo ip address add fd00:cafe::2 peer fd00:cafe::1/128 dev tun-fox
@@ -50,11 +50,11 @@ sudo ./build/ipip dev tun-fox remote fox.localdomain mtu 1460
 ```
 
 To stop the tunnel, press `Ctrl-C`, then type
-```sh
+```bash
 sudo ip link delete tun-rabbit
 ```
 or
-```sh
+```bash
 sudo ip link delete tun-fox
 ```
 
@@ -65,7 +65,7 @@ the remote machine sending ICMP errors to us.
 
 It is suggested to block these packets to save bandwidth. A dirty but effective
 method is to use iptables on both sides running userland-ipip:
-```sh
+```bash
 sudo iptables -A OUTPUT -d [PEER IPv4 ADDRESS] -p icmp --icmp-type 3/3 -j DROP
 ```
 
