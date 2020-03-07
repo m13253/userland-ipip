@@ -7,16 +7,16 @@ tunnel between two hosts.
 
 ## Features
 
-userland-ipip reduces headache when you find that a `type ip6tnl mode any`
-tunnel is not as reliable as you assume. Either IPv4 or IPv6 payload drops
-silently at some magic time. You tried various methods, only to find that a
-system reboot can solve the problem auto-magically.
+- userland-ipip reduces headache when you find that a `type ip6tnl mode any`
+  tunnel is not as reliable as you assume. Either IPv4 or IPv6 payload drops
+  silently at some magic time. You tried various methods, only to find that a
+  system reboot can solve the problem auto-magically.
 
-userland-ipip calculates `local` address automatically, saving you time to write
-scripts for an DHCP-assigned host.
+- userland-ipip calculates `local` address automatically, saving you time to
+  write scripts for an DHCP-assigned host.
 
-userland-ipip also solves the problem when you want to fragment your tunnel.
-(i.e. inner MTU larger than outer MTU.)
+- userland-ipip also solves the problem when you want to fragment your tunnel.
+  (i.e. inner MTU larger than outer MTU.)
 
 ## Building
 
