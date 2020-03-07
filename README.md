@@ -76,14 +76,14 @@ Luckily the problem does not happen over IPv6.
 ```conf
 auto tun-rabbit
 iface tun-rabbit inet static
-   address 10.0.0.1
-   pointopoint 10.0.0.2
-   pre-up ip tuntap add mode tun name $IFACE
-   up /path/to/ipip dev $IFACE local fox.localdomain remote rabbit.localdomain mtu 1460 &
-   post-down ip link del $IFACE
+    address 10.0.0.1
+    pointopoint 10.0.0.2
+    pre-up ip tuntap add mode tun name $IFACE
+    up /path/to/ipip dev $IFACE local fox.localdomain remote rabbit.localdomain mtu 1460 &
+    post-down ip link del $IFACE
 iface tun-rabbit inet6 static
-   address fd00:cafe::1/128
-   up ip route add fd00:cafe::2 dev $IFACE metric 256
+    address fd00:cafe::1/128
+    up ip route add fd00:cafe::2 dev $IFACE metric 256
 ```
 
 ## License
