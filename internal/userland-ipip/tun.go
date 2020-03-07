@@ -25,18 +25,25 @@ import (
 )
 
 func newTunDevice(name string, mtu uint16) (*os.File, error) {
+	ifreqSock, err := syscall.Socket(syscall.AF_UNIX, syscall.SOCK_DGRAM|syscall.SOCK_CLOEXEC, 0)
+	if err != nil {
+		return nil, os.NewSyscallError("socket", err)
+	}
+
 	f, err := os.OpenFile("/dev/net/tun", os.O_RDWR, 0666)
 	if err != nil {
+		syscall.Close(ifreqSock)
 		return nil, err
 	}
 
 	ifreq_flags := &ifreq_flags{}
 	copy(ifreq_flags.ifr_name[:], name)
-	ifreq_flags.ifr_flags = _IFF_TUN | _IFF_MULTI_QUEUE
+	ifreq_flags.ifr_flags = unix.IFF_TUN | unix.IFF_MULTI_QUEUE
 
 	r1, _, err := syscall.Syscall(unix.SYS_IOCTL, f.Fd(), unix.TUNSETIFF, uintptr(unsafe.Pointer(ifreq_flags)))
 	if r1 != 0 {
 		f.Close()
+		syscall.Close(ifreqSock)
 		return nil, os.NewSyscallError("ioctl (TUNSETIFF)", err)
 	}
 
@@ -45,12 +52,28 @@ func newTunDevice(name string, mtu uint16) (*os.File, error) {
 		copy(ifreq_mtu.ifr_name[:], ifreq_flags.ifr_name[:])
 		ifreq_mtu.ifr_mtu = int32(mtu)
 
-		r1, _, err := syscall.Syscall(unix.SYS_IOCTL, f.Fd(), unix.SIOCSIFMTU, uintptr(unsafe.Pointer(ifreq_mtu)))
+		r1, _, err = syscall.Syscall(unix.SYS_IOCTL, uintptr(ifreqSock), unix.SIOCSIFMTU, uintptr(unsafe.Pointer(ifreq_mtu)))
 		if r1 != 0 {
 			f.Close()
+			syscall.Close(ifreqSock)
 			return nil, os.NewSyscallError("ioctl (SIOCSIFMTU)", err)
 		}
 	}
 
+	r1, _, err = syscall.Syscall(unix.SYS_IOCTL, uintptr(ifreqSock), unix.SIOCGIFFLAGS, uintptr(unsafe.Pointer(ifreq_flags)))
+	if r1 != 0 {
+		f.Close()
+		syscall.Close(ifreqSock)
+		return nil, os.NewSyscallError("ioctl (SIOCGIFFLAGS)", err)
+	}
+	ifreq_flags.ifr_flags |= unix.IFF_UP
+	r1, _, err = syscall.Syscall(unix.SYS_IOCTL, uintptr(ifreqSock), unix.SIOCSIFFLAGS, uintptr(unsafe.Pointer(ifreq_flags)))
+	if r1 != 0 {
+		f.Close()
+		syscall.Close(ifreqSock)
+		return nil, os.NewSyscallError("ioctl (SIOCSIFFLAGS)", err)
+	}
+
+	syscall.Close(ifreqSock)
 	return f, nil
 }

@@ -23,32 +23,8 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func newIPIPConn(local, remote *net.IPAddr) (ip4ip, ip6ip *net.IPConn, err error) {
-	bothIPv4, bothIPv6 := true, true
-	if local != nil {
-		if ipv4 := local.IP.To4(); ipv4 != nil {
-			local = &net.IPAddr{
-				IP:   ipv4,
-				Zone: local.Zone,
-			}
-			bothIPv6 = false
-		} else {
-			bothIPv4 = false
-		}
-	}
-	if remote != nil {
-		if ipv4 := remote.IP.To4(); ipv4 != nil {
-			remote = &net.IPAddr{
-				IP:   ipv4,
-				Zone: remote.Zone,
-			}
-			bothIPv6 = false
-		} else {
-			bothIPv4 = false
-		}
-	}
-
-	if bothIPv6 {
+func newIPIPConn(network string, local, remote *net.IPAddr) (ip4ip, ip6ip *net.IPConn, err error) {
+	if network == "ip6" {
 		if remote != nil {
 			ip6ip, err = net.DialIP("ip6:41", local, remote)
 			if err != nil {
@@ -73,7 +49,7 @@ func newIPIPConn(local, remote *net.IPAddr) (ip4ip, ip6ip *net.IPConn, err error
 		return
 	}
 
-	if bothIPv4 {
+	if network == "ip4" {
 		if remote != nil {
 			ip6ip, err = net.DialIP("ip4:41", local, remote)
 			if err != nil {
@@ -95,7 +71,8 @@ func newIPIPConn(local, remote *net.IPAddr) (ip4ip, ip6ip *net.IPConn, err error
 				return
 			}
 		}
+		return
 	}
 
-	return nil, nil, fmt.Errorf("local and remote addresses are not from the same address family: %v", unix.EAFNOSUPPORT)
+	return nil, nil, fmt.Errorf("invalid address family: %v", unix.EAFNOSUPPORT)
 }

@@ -33,11 +33,11 @@ func RunIPIP(devName, local, remote string, useIPv4, useIPv6 bool, mtu uint16) e
 			localAddr, err1 = net.ResolveIPAddr("ip6", local)
 		}
 		if err1 == nil && len(remote) != 0 {
-			remoteAddr, err2 = net.ResolveIPAddr("ip6", local)
+			remoteAddr, err2 = net.ResolveIPAddr("ip6", remote)
 		}
 
 		if err1 == nil && err2 == nil {
-			ip4ip, ip6ip, err = newIPIPConn(localAddr, remoteAddr)
+			ip4ip, ip6ip, err = newIPIPConn("ip6", localAddr, remoteAddr)
 			if err != nil {
 				return fmt.Errorf("failed to start IPIP6 and IP6IP6: %v", err)
 			}
@@ -52,11 +52,11 @@ func RunIPIP(devName, local, remote string, useIPv4, useIPv6 bool, mtu uint16) e
 			localAddr, err3 = net.ResolveIPAddr("ip4", local)
 		}
 		if err3 == nil && len(remote) != 0 {
-			remoteAddr, err4 = net.ResolveIPAddr("ip4", local)
+			remoteAddr, err4 = net.ResolveIPAddr("ip4", remote)
 		}
 
 		if err3 == nil && err4 == nil {
-			ip4ip, ip6ip, err = newIPIPConn(localAddr, remoteAddr)
+			ip4ip, ip6ip, err = newIPIPConn("ip4", localAddr, remoteAddr)
 			if err != nil {
 				return fmt.Errorf("failed to start IPIP and IP6IP (6in4): %v", err)
 			}
@@ -65,17 +65,19 @@ func RunIPIP(devName, local, remote string, useIPv4, useIPv6 bool, mtu uint16) e
 		}
 	}
 
-	if err1 != nil {
-		err = err1
-	} else if err2 != nil {
-		err = err2
-	} else if err3 != nil {
-		err = err3
-	} else if err4 != nil {
-		err = err4
-	}
-	if err != nil {
-		return fmt.Errorf("failed to resolve address: %v", err)
+	if ip4ip == nil && ip6ip == nil {
+		if err1 != nil {
+			err = err1
+		} else if err2 != nil {
+			err = err2
+		} else if err3 != nil {
+			err = err3
+		} else if err4 != nil {
+			err = err4
+		}
+		if err != nil {
+			return fmt.Errorf("failed to resolve address: %v", err)
+		}
 	}
 
 	tun, err := newTunDevice(devName, mtu)
@@ -84,9 +86,11 @@ func RunIPIP(devName, local, remote string, useIPv4, useIPv6 bool, mtu uint16) e
 	}
 	defer tun.Close()
 
+	fmt.Printf("Tunnel created, local %v, remote %v.\n", ip6ip.LocalAddr(), ip6ip.RemoteAddr())
+
 	errChan := make(chan error)
-	go forwardIP4ToTun(tun, ip4ip, errChan)
 	go forwardIP6ToTun(tun, ip6ip, errChan)
+	go forwardIP4ToTun(tun, ip4ip, errChan)
 	go forwardTunToIP(ip4ip, ip6ip, tun, errChan)
 
 	err = <-errChan
@@ -109,6 +113,8 @@ func forwardTunToIP(ip4ip, ip6ip *net.IPConn, tun *os.File, errChan chan<- error
 		if n < 4 {
 			continue
 		}
+
+		fmt.Printf("Read from TUN: %x\n", buf[4:n])
 
 		ethertype := binary.BigEndian.Uint16(buf[2:4])
 		packet := buf[4:n]
@@ -145,6 +151,8 @@ func forwardIP4ToTun(tun *os.File, ip4ip *net.IPConn, errChan chan<- error) {
 			return
 		}
 
+		fmt.Printf("Read from IP4: %x\n", buf[4:n+4])
+
 		_, err = tun.Write(buf[:n+4])
 		if err != nil {
 			errChan <- fmt.Errorf("failed to write to TUN device: %v", err)
@@ -167,6 +175,8 @@ func forwardIP6ToTun(tun *os.File, ip6ip *net.IPConn, errChan chan<- error) {
 			errChan <- nil
 			return
 		}
+
+		fmt.Printf("Read from IP6: %x\n", buf[4:n+4])
 
 		_, err = tun.Write(buf[:n+4])
 		if err != nil {

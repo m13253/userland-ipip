@@ -18,12 +18,6 @@ package userland_ipip
 
 import "golang.org/x/sys/unix"
 
-const (
-	_IFF_TUN         = 0x0001
-	_IFF_TAP         = 0x0002
-	_IFF_MULTI_QUEUE = 0x0100
-)
-
 type (
 	ifreq_flags struct {
 		ifr_name  [unix.IFNAMSIZ]byte

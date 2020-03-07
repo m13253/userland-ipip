@@ -51,53 +51,53 @@ func main() {
 			return
 		case state == 0 && arg == "-4":
 			if useIPv6 {
-				reportArguentError(i, "you cannot specify -4 and -6 at the same time")
+				reportArguentError(i+1, "you cannot specify -4 and -6 at the same time")
 			}
 			useIPv4 = true
 		case state == 0 && arg == "-6":
 			if useIPv4 {
-				reportArguentError(i, "you cannot specify -4 and -6 at the same time")
+				reportArguentError(i+1, "you cannot specify -4 and -6 at the same time")
 			}
 			useIPv6 = true
 		case (state == 0 || state == 1) && arg == "dev":
 			if deviceName != nil {
-				reportArguentError(i, "you already specified the TUN device name")
+				reportArguentError(i+1, "you already specified the TUN device name")
 			}
 			state = 2 | state
 		case (state == 0 || state == 1) && arg == "local":
 			if localAddress != nil {
-				reportArguentError(i, "you already specified the local address")
+				reportArguentError(i+1, "you already specified the local address")
 			}
 			state = 4 | state
 		case (state == 0 || state == 1) && arg == "remote":
 			if remoteAddress != nil {
-				reportArguentError(i, "you already specified the remote address")
+				reportArguentError(i+1, "you already specified the remote address")
 			}
 			state = 6 | state
 		case (state == 0 || state == 1) && arg == "mtu":
 			if mtu != nil {
-				reportArguentError(i, "you already specified the MTU")
+				reportArguentError(i+1, "you already specified the MTU")
 			}
 			state = 8 | state
 		case state == 2 || state == 3:
-			deviceName = &os.Args[i]
+			deviceName = &os.Args[i+1]
 			state &= 1
 		case state == 4 || state == 5:
-			localAddress = &os.Args[i]
+			localAddress = &os.Args[i+1]
 			state &= 1
 		case state == 6 || state == 7:
-			remoteAddress = &os.Args[i]
+			remoteAddress = &os.Args[i+1]
 			state &= 1
 		case state == 8 || state == 9:
 			mtu64, err := strconv.ParseUint(arg, 0, 16)
 			if err != nil {
-				reportArguentError(i, "invalid MTU value")
+				reportArguentError(i+1, "invalid MTU value")
 			}
 			mtu16 := uint16(mtu64)
 			mtu = &mtu16
 			state &= 1
 		default:
-			reportArguentError(i, "unknown option")
+			reportArguentError(i+1, "unknown option")
 		}
 	}
 	if deviceName == nil {
