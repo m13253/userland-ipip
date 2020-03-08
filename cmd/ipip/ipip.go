@@ -156,7 +156,7 @@ func reportArguentError(index int, reason string) {
 			b.WriteString(arg)
 		} else {
 			b.WriteByte('\'')
-			b.WriteString(strings.ReplaceAll(arg, "'", "'\\''"))
+			b.WriteString(strings.Replace(arg, "'", "'\\''", -1))
 			b.WriteByte('\'')
 		}
 
