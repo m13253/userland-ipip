@@ -84,9 +84,8 @@ It is suggested to block these packets to save bandwidth. A dirty but effective
 method is to use iptables on both sides running userland-ipip:
 ```bash
 sudo iptables -A OUTPUT -d [PEER IPv4 ADDRESS] -p icmp --icmp-type 3/3 -j DROP
+sudo ip6tables -A OUTPUT -d [PEER IPv6 ADDRESS] -p icmp6 --icmpv6-type 1/4 -j DROP
 ```
-
-Luckily the problem does not happen over IPv6.
 
 ## Use userland-ipip with systemd
 
