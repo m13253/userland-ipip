@@ -130,14 +130,14 @@ func forwardTunToIP(ctx context.Context, ip4ip, ip6ip *net.IPConn, tun *os.File,
 		case etherTypeIPv4:
 			_, err = ip4ip.Write(packet)
 			if err != nil {
-				errChan <- fmt.Errorf("failed to send IPv4 tunneled data: %v", err)
-				return
+				fmt.Fprintf(os.Stderr, "failed to send IPv4 tunneled data: %v", err)
+				continue
 			}
 		case etherTypeIPv6:
 			_, err = ip6ip.Write(packet)
 			if err != nil {
-				errChan <- fmt.Errorf("failed to send IPv6 tunneled data: %v", err)
-				return
+				fmt.Fprintf(os.Stderr, "failed to send IPv6 tunneled data: %v", err)
+				continue
 			}
 		}
 	}
